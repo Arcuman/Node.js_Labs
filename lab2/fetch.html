@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+
+<script>
+    async function notify()
+    {
+        let response = await fetch('http://localhost:5000/api/name');
+        if(response.ok)
+        {
+            let result = await response.text();
+            document.write(result);
+        }
+        else {alert("Ошибка HTTP: " + response.status);}
+    }
+</script>
+
+<body>
+<button onclick="notify()" style="height: 50px; width: 120px;"></button>
+</body>
+
+</html>

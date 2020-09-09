@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html  lang="ru">
+<head>
+    <title></title>
+</head>
+<script>
+    let xhr = new XMLHttpRequest();
+
+    function notify() {
+        xhr.open('GET', 'http://localhost:5000/api/name', true);
+        xhr.send();
+        xhr.onload = () => {
+            if (xhr.status !== 200) {
+                alert(xhr.status + ':' + xhr.statusText);
+            } else {
+                document.write(`<h1>${xhr.response}</h1>`);
+            }
+        }
+    };
+</script>
+
+<body>
+<button onclick="notify()" style="height: 50px; width: 120px;" />
+</body>
+
+</html>
