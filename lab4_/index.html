@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<section id="insert-names">
+    <div>
+        <label>
+            <input name="newnamesData" id="id" type="number">
+        </label>
+        <label>
+            <input name="newnamesData" id="name" type="text">
+        </label>
+        <label>
+            <input name="newnamesData" id="bday" type="date">
+        </label>
+    </div>
+    <button onclick="Get()">Get</button>
+    <button onclick="Post()">POST/PUT</button>
+    <button onclick="Comm()">Commit</button>
+    <section id="select-names"></section>
+</section>
+<script>
+    const DBPATH = 'http://localhost:5000/api/db';
+    const COMMPOINT = 'http://localhost:5000/commit';
+    function Get() {
+        fetch(DBPATH, {method: 'GET'})
+            .then(response => response.json())
+            .then(jsonResponse => {
+                let container = document.getElementById('select-names');
+                container.innerHTML = '';
+                jsonResponse.forEach(names => {
+                    let namesContainer = document.createElement('div');
+
+                    let deleteButton = document.createElement('button');
+                    deleteButton.setAttribute('onclick', 'Delete(event)');
+                    deleteButton.setAttribute('namesId', names.id);
+                    deleteButton.innerText = 'Delete';
+
+                    namesContainer.innerHTML = `<span>${names.id}. ${names.name}, ${names.bday}</span>`;
+                    namesContainer.appendChild(deleteButton);
+
+                    container.append(namesContainer, document.createElement('br'));
+                });
+            });
+    }
+
+    function Getid(namesData, namesId) {
+        fetch(DBPATH, {method: 'GET'})
+            .then(response => response.json())
+            .then(jsonResponse => {
+                let a = true;
+                jsonResponse.forEach(names => {
+                    if((namesId == names.id))
+                        a = false;
+                });
+                let container = document.getElementById('select-names');
+                container.innerHTML = '';
+                let namesContainer = document.createElement('div');
+                namesContainer.innerHTML = `<span>${a}</span>`;
+                container.append(namesContainer, document.createElement('br'));
+                upsert(namesData, namesId, a)
+
+            });
+    }
+    function Post() {
+        let namesData = Array.from(document.getElementsByName('newnamesData')).map(a => {
+            return {field: a.getAttribute('id'), value: a.value};
+        });
+        let namesId = namesData.find(a => a.field === 'id').value;
+        let container = document.getElementById('select-names');
+        container.innerHTML = '';
+        let namesContainer = document.createElement('div');
+
+        namesContainer.innerHTML = `<span>${namesData.find(a => a.field === 'id').value}. ${namesData.find(a => a.field === 'name').value}, ${namesData.find(a => a.field === 'bday').value}</span>`;
+        container.append(namesContainer, document.createElement('br'));
+        Getid(namesData, namesId);
+    }
+
+    function upsert (namesData, namesId, a) {
+        fetch(DBPATH, {
+            method: a ? 'POST' : 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: Number(namesId),
+                name: namesData.find(a => a.field === 'name').value,
+                bday: namesData.find(a => a.field === 'bday').value,
+            })
+        })
+    }
+    function Delete(event) {
+        fetch(DBPATH + '?id=' + event.target.getAttribute('namesId'),
+            {method: 'DELETE'})
+            .then(response => response.json())
+            .then(jsonResponse => {
+                let flag = JSON.parse(jsonResponse);
+                let container = document.getElementById('select-names');
+                container.innerHTML = '';
+                let namesContainer = document.createElement('div');
+                namesContainer.innerHTML = `<span>${flag}</span>`;
+                container.append(namesContainer, document.createElement('br'));
+            })
+    }
+    function Comm()
+    {
+        fetch(COMMPOINT, {method: 'Get'})
+            .then(response => response.json())
+            .then(jsonResponse => {
+                let container = document.getElementById('select-names');
+                container.innerHTML = '';
+                let namesContainer = document.createElement('div');
+                namesContainer.innerHTML = `<span>"COMMITED"</span>`;
+                container.append(namesContainer, document.createElement('br'));
+            });
+    }
+
+</script>
+</body>
+</html>
